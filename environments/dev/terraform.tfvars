@@ -7,7 +7,7 @@ resource_groups = {
 
 storage_accounts = {
   sa1 = {
-    name                     = "sadev4498765"
+    name                     = "sadev44987654"
     resource_group_name      = "rg-dev-portfolio"
     location                 = "Japan East"
     account_tier             = "Standard"
