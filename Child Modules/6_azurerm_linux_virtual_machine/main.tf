@@ -33,7 +33,8 @@ resource "azurerm_linux_virtual_machine" "vm" {
   name                            = each.value.name
   location                        = each.value.location
   resource_group_name             = each.value.resource_group_name
-  size                            = each.value.size
+  # Use per-VM size when provided; otherwise fall back to module default to avoid regional core quota issues.
+  size                            = lookup(each.value, "size", var.default_vm_size)
   admin_username                  = each.value.admin_username
   admin_password                  = each.value.admin_password
   disable_password_authentication = false
