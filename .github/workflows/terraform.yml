@@ -27,6 +27,9 @@ jobs:
 
       # 3. Azure Login
       - name: Azure Login
+      permissions:
+        id-token: write
+        contents: read
         uses: azure/login@v2
         with:
           client-id: 8b4ab146-fe7e-475f-8679-904a878c249d
