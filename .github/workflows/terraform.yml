@@ -26,15 +26,13 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       # 3. Azure Login
+
       - name: Azure Login
-      permissions:
-        id-token: write
-        contents: read
-        uses: azure/login@v2
-        with:
-          client-id: 8b4ab146-fe7e-475f-8679-904a878c249d
-          tenant-id: 13ddff3b-0010-420d-a05c-aa44b14d58d5
-          subscription-id: 021df452-f2a0-4d1b-afda-d826a750c685
+        run: |
+          az login --service-principal \
+            -u "${{ secrets.AZURE_CLIENT_ID }}" \
+            -p "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"
 
       # 4. Terraform Format
       - name: Terraform Format 
