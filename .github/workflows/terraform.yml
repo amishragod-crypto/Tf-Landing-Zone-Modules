@@ -101,7 +101,7 @@ jobs:
         run: |
           infracost breakdown \
             --path . \
-            --format table \
+            --format html \
             --out-file infracost.html
 
       - name: Upload Infracost Report
