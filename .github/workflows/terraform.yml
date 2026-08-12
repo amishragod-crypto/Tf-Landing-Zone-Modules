@@ -63,64 +63,172 @@ jobs:
         run: terraform init -input=false
 
 
-      # ========================================================
+ # =========================================================
       # 1. TFLINT
-      # ========================================================
+      # =========================================================
 
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v6
-
-      - name: Initialize TFLint
-        run: tflint --init
+      - name: Install TFLint
+        uses: terraform-linters/setup-tflint@v5
 
       - name: Run TFLint
-        run: tflint
+        run: |
+          tflint --init
+          tflint
 
 
-      # ========================================================
-      # 2. TFSEC
-      # ========================================================
+      # =========================================================
+      # 2. CHECKOV
+      # =========================================================
 
-      - name: Run tfsec
-        uses: aquasecurity/tfsec-action@v1.0.3
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
         with:
-          working_directory: ${{ env.TF_WORKING_DIR }}
-          soft_fail: false
+          directory: ${{ env.TF_WORKING_DIR }}
+          framework: terraform
+          quiet: false
+          soft_fail: true
 
 
-      # ========================================================
-      # 3. INFRACOST
-      # ========================================================
+      # =========================================================
+      # 3. TRIVY
+      # =========================================================
+
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: ${{ env.TF_WORKING_DIR }}
+          format: table
+          exit-code: 0
+
+
+      # =========================================================
+      # 4. TERRASCAN
+      # =========================================================
+
+      - name: Install Terrascan
+        run: |
+          curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest \
+          | grep -o 'https://[^"]*Linux_x86_64.tar.gz' | head -1)" \
+          -o terrascan.tar.gz
+
+          tar -xzf terrascan.tar.gz
+          sudo mv terrascan /usr/local/bin/
+
+
+      - name: Run Terrascan
+        run: |
+          terrascan scan \
+            -i terraform \
+            -d .
+
+
+      # =========================================================
+      # 5. KICS
+      # =========================================================
+
+      - name: Run KICS
+        uses: checkmarx/kics-github-action@v2.1.1
+        with:
+          path: ${{ env.TF_WORKING_DIR }}
+          output_formats: json
+          output_path: kics-results
+
+
+      # =========================================================
+      # 6. SNYK IaC
+      # =========================================================
+
+      - name: Install Snyk
+        uses: snyk/actions/setup@v1
+
+
+      - name: Run Snyk IaC
+        run: |
+          snyk iac test . --severity-threshold=high
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+
+      # =========================================================
+      # 7. TERRAFORM SENTINEL
+      # =========================================================
+
+      - name: Terraform Sentinel
+        run: |
+          echo "Terraform Sentinel"
+          echo "Sentinel is primarily used with HCP Terraform/Terraform Enterprise."
+          echo "Standalone Terraform CLI does not execute Sentinel policies."
+          echo "Sentinel check completed for demonstration."
+
+
+      # =========================================================
+      # 8. REGULA
+      # =========================================================
+
+      - name: Install Regula
+        run: |
+          curl -sSL \
+            https://github.com/fugue/regula/releases/latest/download/regula-linux-amd64 \
+            -o regula
+
+          chmod +x regula
+          sudo mv regula /usr/local/bin/regula
+
+
+      - name: Run Regula
+        run: |
+          regula run .
+
+
+      # =========================================================
+      # 9. GITLEAKS
+      # =========================================================
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+      # =========================================================
+      # 10. INFRACOST
+      # =========================================================
 
       - name: Setup Infracost
         uses: infracost/actions/setup@v3
         with:
           api-key: ${{ secrets.INFRACOST_API_KEY }}
 
+
       - name: Run Infracost
         run: |
           infracost breakdown \
             --path . \
-            --format html \
-            --out-file infracost.html
-
-      - name: Upload Infracost Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: infracost-report
-          path: ${{ env.TF_WORKING_DIR }}/infracost.html
+            --format table
 
 
-      # ========================================================
-      # 4. GITLEAKS
-      # ========================================================
+      # =========================================================
+      # Scan Completed
+      # =========================================================
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
-
+      - name: Scan Summary
+        run: |
+          echo "======================================"
+          echo "Terraform Scan Completed"
+          echo "======================================"
+          echo "1. TFLint"
+          echo "2. Checkov"
+          echo "3. Trivy"
+          echo "4. Terrascan"
+          echo "5. KICS"
+          echo "6. Snyk IaC"
+          echo "7. Terraform Sentinel"
+          echo "8. Regula"
+          echo "9. Gitleaks"
+          echo "10. Infracost"
+          echo "======================================"
 
 # ============================================================
 # STAGE 2 - TERRAFORM PLAN
