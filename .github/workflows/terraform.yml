@@ -184,7 +184,7 @@ jobs:
 
           echo "Running Sentinel policy tests..."
 
-          sentinel test policies
+          sentinel test .
 
 
       # # =========================================================
