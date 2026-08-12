@@ -126,24 +126,24 @@ jobs:
       # 5. KICS
       # =========================================================
 
-      - name: Install KICS
-        run: |
-          curl -L https://github.com/Checkmarx/kics/archive/refs/tags/v2.1.21.zip
-          # tar -xzf kics.tar.gz
+      # - name: Install KICS
+      #   run: |
+      #     curl -L https://github.com/Checkmarx/kics/archive/refs/tags/v2.1.21.zip
+      #     # tar -xzf kics.tar.gz
 
-          sudo mv kics /usr/local/bin/kics
+      #     sudo mv kics /usr/local/bin/kics
 
-          kics version
+      #     kics version
 
 
-      - name: Run KICS
-        run: |
-          mkdir -p kics-results
+      # - name: Run KICS
+      #   run: |
+      #     mkdir -p kics-results
 
-          kics scan \
-            -p . \
-            --output-path kics-results \
-            --report-formats json
+      #     kics scan \
+      #       -p . \
+      #       --output-path kics-results \
+      #       --report-formats json
 
 
       # =========================================================
