@@ -128,10 +128,8 @@ jobs:
 
       - name: Install KICS
         run: |
-          curl -L https://github.com/Checkmarx/kics/releases/latest/download/kics_linux_x64.tar.gz \
-            -o kics.tar.gz
-
-          tar -xzf kics.tar.gz
+          curl -L https://github.com/Checkmarx/kics/archive/refs/tags/v2.1.21.zip
+          # tar -xzf kics.tar.gz
 
           sudo mv kics /usr/local/bin/kics
 
