@@ -184,7 +184,9 @@ jobs:
 
           echo "Running Sentinel policy tests..."
 
-          sentinel test .
+          pwd
+          find . -type f -name "*.sentinel" -print
+          sentinel test ./sentinel-policies
 
 
       # # =========================================================
