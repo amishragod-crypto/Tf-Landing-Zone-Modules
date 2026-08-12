@@ -1,1 +1,11 @@
-variable "linux_virtual_machines" {}
+variable "linux_virtual_machines" {
+    type = map(object({
+        name                 = string
+        resource_group_name  = string
+        location             = string
+        size                 = string
+        admin_username       = string
+        admin_password       = string
+        network_interface_id = string
+    }))
+}
