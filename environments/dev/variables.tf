@@ -39,7 +39,6 @@ variable "public_ips" {
         resource_group_name  = string
         location             = string
         allocation_method    = string
-        sku                  = string
     }))
 }
 
@@ -51,6 +50,5 @@ variable "linux_virtual_machines" {
         size                 = string
         admin_username       = string
         admin_password       = string
-        network_interface_id = string
     }))
 }

@@ -6,6 +6,5 @@ variable "linux_virtual_machines" {
         size                 = string
         admin_username       = string
         admin_password       = string
-        network_interface_id = string
     }))
 }
