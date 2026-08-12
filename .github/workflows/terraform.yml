@@ -9,23 +9,158 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  TF_VERSION: "1.9.8"
+  TF_WORKING_DIR: "environments/dev"
+
+# ============================================================
+# STAGE 1 - TERRAFORM SCAN
+# ============================================================
+
 jobs:
 
-  terraform:
-    name: Terraform
+  terraform-scan:
+
+    name: Terraform Scan
+
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
 
     steps:
 
-      # 1. Checkout code
+      # --------------------------------------------------------
+      # Checkout
+      # --------------------------------------------------------
+
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
-      # 2. Install Terraform
+
+      # --------------------------------------------------------
+      # Setup Terraform
+      # --------------------------------------------------------
+
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
 
-      # 3. Azure Login
+
+      # --------------------------------------------------------
+      # Terraform Init
+      # --------------------------------------------------------
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+
+      # ========================================================
+      # 1. TFLINT
+      # ========================================================
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v6
+
+      - name: Initialize TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint
+
+
+      # ========================================================
+      # 2. TFSEC
+      # ========================================================
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: ${{ env.TF_WORKING_DIR }}
+          soft_fail: false
+
+
+      # ========================================================
+      # 3. INFRACOST
+      # ========================================================
+
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+        with:
+          api-key: ${{ secrets.INFRACOST_API_KEY }}
+
+      - name: Run Infracost
+        run: |
+          infracost breakdown \
+            --path . \
+            --format json \
+            --out-file infracost.json
+
+      - name: Upload Infracost Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: infracost-report
+          path: ${{ env.TF_WORKING_DIR }}/infracost.json
+
+
+      # ========================================================
+      # 4. GITLEAKS
+      # ========================================================
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+
+# ============================================================
+# STAGE 2 - TERRAFORM PLAN
+# ============================================================
+
+  terraform-plan:
+
+    name: Terraform Plan
+
+    needs: terraform-scan
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+
+      # --------------------------------------------------------
+      # Checkout
+      # --------------------------------------------------------
+
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+
+      # --------------------------------------------------------
+      # Setup Terraform
+      # --------------------------------------------------------
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+
+      # --------------------------------------------------------
+      # Azure Login
+      # --------------------------------------------------------
 
       - name: Azure Login
         run: |
@@ -35,33 +170,137 @@ jobs:
             --tenant "${{ secrets.AZURE_TENANT_ID }}"
           az account set --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
 
-      # 4. Terraform Format
-      - name: Terraform Format 
-        working-directory: environments/dev
-        run: terraform fmt -recursive
 
-      # - name: Terraform Format Check
-      #   working-directory: environments/dev
-      #   run: terraform fmt -check -recursive
+      # --------------------------------------------------------
+      # Terraform Init
+      # --------------------------------------------------------
 
-      # 5. Terraform Init
       - name: Terraform Init
-        working-directory: environments/dev
-        run: terraform init
+        run: terraform init -input=false
 
-      # 6. Terraform Validate
+
+      # --------------------------------------------------------
+      # Terraform Validate
+      # --------------------------------------------------------
+
       - name: Terraform Validate
-        working-directory: environments/dev
         run: terraform validate
 
-      # 7. Terraform Plan
-      - name: Terraform Plan
-        working-directory: environments/dev
-        run: terraform plan
 
-      # 8. Terraform Apply
-      # Only runs when code is pushed to main
+      # --------------------------------------------------------
+      # Terraform Plan
+      # --------------------------------------------------------
+
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -input=false \
+            -out=tfplan
+
+
+      # --------------------------------------------------------
+      # Upload Terraform Plan
+      # --------------------------------------------------------
+
+      - name: Upload Terraform Plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TF_WORKING_DIR }}/tfplan
+
+
+# ============================================================
+# STAGE 3 - MANUAL APPROVAL
+# ============================================================
+
+  # manual-approval:
+
+  #   name: Manual Approval
+
+  #   needs: terraform-plan
+
+  #   runs-on: ubuntu-latest
+
+  #   environment:
+  #     name: production
+
+  #   steps:
+
+  #     - name: Approval Completed
+  #       run: echo "Production deployment approved."
+
+
+# ============================================================
+# STAGE 4 - TERRAFORM APPLY
+# ============================================================
+
+  terraform-apply:
+
+    name: Terraform Apply
+
+    # needs: manual-approval
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+    steps:
+
+      # --------------------------------------------------------
+      # Checkout
+      # --------------------------------------------------------
+
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+
+      # --------------------------------------------------------
+      # Setup Terraform
+      # --------------------------------------------------------
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+
+      # --------------------------------------------------------
+      # Azure Login
+      # --------------------------------------------------------
+
+      - name: Azure Login
+        run: |
+          az login --service-principal \
+            -u "${{ secrets.AZURE_CLIENT_ID }}" \
+            -p "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"
+          az account set --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+
+
+      # --------------------------------------------------------
+      # Terraform Init
+      # --------------------------------------------------------
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+
+      # --------------------------------------------------------
+      # Download Terraform Plan
+      # --------------------------------------------------------
+
+      - name: Download Terraform Plan
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TF_WORKING_DIR }}
+
+
+      # --------------------------------------------------------
+      # Terraform Apply
+      # --------------------------------------------------------
+
       - name: Terraform Apply
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        working-directory: environments/dev
-        run: terraform apply -auto-approve
+        run: terraform apply -input=false tfplan
