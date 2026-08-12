@@ -108,7 +108,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: infracost-report
-          path: ${{ env.TF_WORKING_DIR }}/infracost.json
+          path: ${{ env.TF_WORKING_DIR }}/infracost.csv
 
 
       # ========================================================
@@ -238,7 +238,7 @@ jobs:
 
     name: Terraform Apply
 
-    # needs: manual-approval
+    needs: terraform-plan
 
     runs-on: ubuntu-latest
 
