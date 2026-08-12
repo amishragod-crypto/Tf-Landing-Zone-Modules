@@ -123,93 +123,7 @@ jobs:
       #       -d .
 
       # =========================================================
-      # 5. KICS
-      # =========================================================
-
-      # - name: Install KICS
-      #   run: |
-      #     curl -L https://github.com/Checkmarx/kics/archive/refs/tags/v2.1.21.zip
-      #     # tar -xzf kics.tar.gz
-
-      #     sudo mv kics /usr/local/bin/kics
-
-      #     kics version
-
-
-      # - name: Run KICS
-      #   run: |
-      #     mkdir -p kics-results
-
-      #     kics scan \
-      #       -p . \
-      #       --output-path kics-results \
-      #       --report-formats json
-
-
-      # # =========================================================
-      # # 6. SNYK IaC
-      # # =========================================================
-
-      # - name: Install Snyk
-      #   uses: snyk/actions/setup@v1
-
-
-      # - name: Run Snyk IaC
-      #   run: |
-      #     snyk iac test . --severity-threshold=high
-      #   env:
-      #     SNYK_TOKEN: ${{secrets.SNYK_TOKEN}}
-
-
-      # =========================================================
-      # 7. TERRAFORM SENTINEL
-      # =========================================================
-
-      # - name: Terraform Sentinel
-      #   run: |
-      #     echo "Installing Sentinel..."
-
-      #     SENTINEL_VERSION="0.41.0"
-
-      #     curl -fsSL \
-      #       "https://releases.hashicorp.com/sentinel/${SENTINEL_VERSION}/sentinel_${SENTINEL_VERSION}_linux_amd64.zip" \
-      #       -o sentinel.zip
-
-      #     unzip -o sentinel.zip
-      #     sudo mv sentinel /usr/local/bin/sentinel
-      #     sudo chmod +x /usr/local/bin/sentinel
-
-      #     echo "Sentinel version:"
-      #     sentinel version
-
-      #     echo "Running Sentinel policy tests..."
-
-      #     pwd
-      #     find . -type f -name "*.sentinel" -print
-      #     sentinel test ./sentinel-policies
-
-
-      # # # =========================================================
-      # # 8. REGULA
-      # # =========================================================
-
-      # - name: Install Regula
-      #   run: |
-      #     curl -sSL \
-      #       https://github.com/fugue/regula/releases/latest/download/regula-linux-amd64 \
-      #       -o regula
-
-      #     chmod +x regula
-      #     sudo mv regula /usr/local/bin/regula
-
-
-      # - name: Run Regula
-      #   run: |
-      #     regula run .
-
-
-      # =========================================================
-      # 9. GITLEAKS
+      # 5. GITLEAKS
       # =========================================================
 
       - name: Run Gitleaks
@@ -220,7 +134,7 @@ jobs:
 
 
       # =========================================================
-      # 10. INFRACOST
+      # 6. INFRACOST
       # =========================================================
 
       - name: Setup Infracost
@@ -249,12 +163,8 @@ jobs:
           echo "2. Checkov"
           echo "3. Trivy"
           echo "4. Terrascan"
-          echo "5. KICS"
-          echo "6. Snyk IaC"
-          echo "7. Terraform Sentinel"
-          echo "8. Regula"
-          echo "9. Gitleaks"
-          echo "10. Infracost"
+          echo "5. Gitleaks"
+          echo "6. Infracost"
           echo "======================================"
 
 # ============================================================
