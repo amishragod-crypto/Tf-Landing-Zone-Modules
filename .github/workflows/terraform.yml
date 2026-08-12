@@ -101,14 +101,14 @@ jobs:
         run: |
           infracost breakdown \
             --path . \
-            --format json \
-            --out-file infracost.json
+            --format table \
+            --out-file infracost.html
 
       - name: Upload Infracost Report
         uses: actions/upload-artifact@v4
         with:
           name: infracost-report
-          path: ${{ env.TF_WORKING_DIR }}/infracost.csv
+          path: ${{ env.TF_WORKING_DIR }}/infracost.html
 
 
       # ========================================================
