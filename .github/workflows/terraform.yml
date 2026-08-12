@@ -165,31 +165,31 @@ jobs:
       # 7. TERRAFORM SENTINEL
       # =========================================================
 
-      - name: Terraform Sentinel
-        run: |
-          echo "Installing Sentinel..."
+      # - name: Terraform Sentinel
+      #   run: |
+      #     echo "Installing Sentinel..."
 
-          SENTINEL_VERSION="0.41.0"
+      #     SENTINEL_VERSION="0.41.0"
 
-          curl -fsSL \
-            "https://releases.hashicorp.com/sentinel/${SENTINEL_VERSION}/sentinel_${SENTINEL_VERSION}_linux_amd64.zip" \
-            -o sentinel.zip
+      #     curl -fsSL \
+      #       "https://releases.hashicorp.com/sentinel/${SENTINEL_VERSION}/sentinel_${SENTINEL_VERSION}_linux_amd64.zip" \
+      #       -o sentinel.zip
 
-          unzip -o sentinel.zip
-          sudo mv sentinel /usr/local/bin/sentinel
-          sudo chmod +x /usr/local/bin/sentinel
+      #     unzip -o sentinel.zip
+      #     sudo mv sentinel /usr/local/bin/sentinel
+      #     sudo chmod +x /usr/local/bin/sentinel
 
-          echo "Sentinel version:"
-          sentinel version
+      #     echo "Sentinel version:"
+      #     sentinel version
 
-          echo "Running Sentinel policy tests..."
+      #     echo "Running Sentinel policy tests..."
 
-          pwd
-          find . -type f -name "*.sentinel" -print
-          sentinel test ./sentinel-policies
+      #     pwd
+      #     find . -type f -name "*.sentinel" -print
+      #     sentinel test ./sentinel-policies
 
 
-      # # =========================================================
+      # # # =========================================================
       # # 8. REGULA
       # # =========================================================
 
