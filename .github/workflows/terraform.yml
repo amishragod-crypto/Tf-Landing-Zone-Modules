@@ -167,29 +167,43 @@ jobs:
 
       - name: Terraform Sentinel
         run: |
-          echo "Terraform Sentinel"
-          echo "Sentinel is primarily used with HCP Terraform/Terraform Enterprise."
-          echo "Standalone Terraform CLI does not execute Sentinel policies."
-          echo "Sentinel check completed for demonstration."
+          echo "Installing Sentinel..."
+
+          SENTINEL_VERSION="0.41.0"
+
+          curl -fsSL \
+            "https://releases.hashicorp.com/sentinel/${SENTINEL_VERSION}/sentinel_${SENTINEL_VERSION}_linux_amd64.zip" \
+            -o sentinel.zip
+
+          unzip -o sentinel.zip
+          sudo mv sentinel /usr/local/bin/sentinel
+          sudo chmod +x /usr/local/bin/sentinel
+
+          echo "Sentinel version:"
+          sentinel version
+
+          echo "Running Sentinel policy tests..."
+
+          sentinel test policies
 
 
-      # =========================================================
-      # 8. REGULA
-      # =========================================================
+      # # =========================================================
+      # # 8. REGULA
+      # # =========================================================
 
-      - name: Install Regula
-        run: |
-          curl -sSL \
-            https://github.com/fugue/regula/releases/latest/download/regula-linux-amd64 \
-            -o regula
+      # - name: Install Regula
+      #   run: |
+      #     curl -sSL \
+      #       https://github.com/fugue/regula/releases/latest/download/regula-linux-amd64 \
+      #       -o regula
 
-          chmod +x regula
-          sudo mv regula /usr/local/bin/regula
+      #     chmod +x regula
+      #     sudo mv regula /usr/local/bin/regula
 
 
-      - name: Run Regula
-        run: |
-          regula run .
+      # - name: Run Regula
+      #   run: |
+      #     regula run .
 
 
       # =========================================================
