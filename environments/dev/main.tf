@@ -15,8 +15,15 @@ module "virtual_network" {
   virtual_networks = var.virtual_networks
 }
 
+module "network_security_group" {
+  depends_on              = [module.resource_group]
+  source                  = "../../Child_Modules/7_azurerm_network_security_group"
+  network_security_groups = var.network_security_groups
+}
+
+
 module "subnet" {
-  depends_on = [module.virtual_network]
+  depends_on = [module.virtual_network, module.network_security_group]
   source     = "../../Child_Modules/4_azurerm_subnet"
   subnets    = var.subnets
 }

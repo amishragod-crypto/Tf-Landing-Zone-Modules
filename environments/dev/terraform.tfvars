@@ -24,18 +24,35 @@ virtual_networks = {
   }
 }
 
+network_security_groups = {
+  nsg_frontend = {
+    name                = "nsg-frontend"
+    resource_group_name = "rg-dev-portfolio"
+    location            = "Japan East"
+    security_rules = {}
+  }
+  nsg_bastion = {
+    name                = "nsg-bastion"
+    resource_group_name = "rg-dev-portfolio"
+    location            = "Japan East"
+    security_rules = {}
+  }
+}
+
 subnets = {
   subnet1 = {
-    name                 = "Frontend-subnet"
-    resource_group_name  = "rg-dev-portfolio"
-    virtual_network_name = "vnet-1"
-    address_prefixes     = ["10.0.0.0/24"]
+    name                       = "Frontend-subnet"
+    resource_group_name        = "rg-dev-portfolio"
+    virtual_network_name       = "vnet-1"
+    address_prefixes           = ["10.0.0.0/24"]
+    network_security_group_name = "nsg-frontend"
   }
   subnet2 = {
-    name                 = "AzureBastionSubnet"
-    resource_group_name  = "rg-dev-portfolio"
-    virtual_network_name = "vnet-1"
-    address_prefixes     = ["10.0.1.0/24"]
+    name                       = "AzureBastionSubnet"
+    resource_group_name        = "rg-dev-portfolio"
+    virtual_network_name       = "vnet-1"
+    address_prefixes           = ["10.0.1.0/24"]
+    network_security_group_name = "nsg-bastion"
   }
 }
 
