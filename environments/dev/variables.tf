@@ -29,7 +29,6 @@ variable "network_security_groups" {
     name                = string
     location            = string
     resource_group_name = string
-    security_rules       = {}
     }))
   }
 
