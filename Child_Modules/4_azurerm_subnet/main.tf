@@ -1,5 +1,8 @@
 data "azurerm_network_security_group" "nsg" {
-  for_each = var.subnets 
+  for_each = {
+    for k, v in var.subnets : k => v
+    if v.name != "AzureBastionSubnet"
+  }
 
   name                = each.value.network_security_group_name
   resource_group_name = each.value.resource_group_name
