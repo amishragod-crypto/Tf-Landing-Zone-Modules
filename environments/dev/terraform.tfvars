@@ -7,7 +7,7 @@ resource_groups = {
 
 storage_accounts = {
   sa1 = {
-    name                     = "sadev4498765"
+    name                     = "sadev02189431"
     resource_group_name      = "rg-dev-portfolio"
     location                 = "Japan East"
     account_tier             = "Standard"
@@ -27,12 +27,6 @@ virtual_networks = {
 network_security_groups = {
   nsg_frontend = {
     name                = "nsg-frontend"
-    resource_group_name = "rg-dev-portfolio"
-    location            = "Japan East"
-    security_rules = {}
-  }
-  nsg_bastion = {
-    name                = "nsg-bastion"
     resource_group_name = "rg-dev-portfolio"
     location            = "Japan East"
     security_rules = {}
